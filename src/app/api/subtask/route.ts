@@ -35,7 +35,7 @@ export const GET = async (request: NextRequest) => {
       {
         result: {
           data: null,
-          error: "ID task tidak ditemukan!",
+          error: "ID Subtask tidak ditemukan!",
         },
       },
       {
@@ -63,7 +63,7 @@ export const GET = async (request: NextRequest) => {
         {
           result: {
             data: null,
-            error: "Task tidak ditemukan",
+            error: "Subtask tidak ditemukan",
           },
         },
         {
@@ -150,7 +150,7 @@ export const POST = async (request: NextRequest) => {
         {
           result: {
             data: null,
-            error: "Gagal menambahkan task!",
+            error: "Gagal menambahkan subtask!",
           },
         },
         {
@@ -166,7 +166,7 @@ export const POST = async (request: NextRequest) => {
     return Response.json(
       {
         result: {
-          data: "Task berhasil ditambah!",
+          data: "Subtask berhasil ditambah!",
           error: "",
         },
       },
@@ -202,15 +202,29 @@ export const POST = async (request: NextRequest) => {
 // export async function PUT(request: NextRequest) {}
 
 export async function DELETE(request: NextRequest) {
-  const body = await request.json();
-
-  try {
-    const deleteTask = await db.task.deleteMany({
-      where: {
-        id: {
-          in: body, // Menggunakan kondisi `in` untuk mencocokkan semua userId dalam array
+  const id = request.nextUrl.searchParams.get("id");
+  if (!id) {
+    return Response.json(
+      {
+        result: {
+          data: null,
+          error: "ID Subtask tidak ditemukan!",
         },
       },
+      {
+        status: 404,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "DELETE",
+          "Access-Control-Allow-Headers": "Content-Type, application/json",
+        },
+      }
+    );
+  }
+
+  try {
+    const deleteTask = await db.task.delete({
+      where: { id },
     });
 
     if (!deleteTask) {
@@ -218,7 +232,7 @@ export async function DELETE(request: NextRequest) {
         {
           result: {
             data: null,
-            error: "Task gagal dihapus!",
+            error: "Subtask gagal dihapus!",
           },
         },
         {
@@ -234,7 +248,7 @@ export async function DELETE(request: NextRequest) {
     return Response.json(
       {
         result: {
-          data: "Task berhasil dihapus!",
+          data: "Subtask berhasil dihapus!",
           error: "",
         },
       },
@@ -276,7 +290,7 @@ export async function PATCH(request: NextRequest) {
       {
         result: {
           data: null,
-          error: "ID Task tidak ditemukan!",
+          error: "ID Subtask tidak ditemukan!",
         },
       },
       {
@@ -302,7 +316,7 @@ export async function PATCH(request: NextRequest) {
           {
             result: {
               data: null,
-              error: "Task gagal diubah!",
+              error: "Subtask gagal diubah!",
             },
           },
           {
@@ -318,7 +332,7 @@ export async function PATCH(request: NextRequest) {
       return Response.json(
         {
           result: {
-            data: "Task berhasil diubah!",
+            data: "Subtask berhasil diubah!",
             error: "",
           },
         },

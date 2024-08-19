@@ -10,8 +10,10 @@ export type TaskDataScheme = {
     taskId: string;
   }[];
   list: {
+    id: string;
+    name: string;
+    color: string;
     taskId: string;
-    listId: string;
   }[];
   tags: {
     id: string;
@@ -33,8 +35,10 @@ export type TaskDataDetail = {
     taskId: string;
   }[];
   list: {
+    id: string;
+    name: string;
+    color: string;
     taskId: string;
-    listId: string;
   }[];
   tags: {
     id: string;

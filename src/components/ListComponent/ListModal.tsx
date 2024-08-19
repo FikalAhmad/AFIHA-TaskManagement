@@ -1,5 +1,5 @@
-"use client";
-import { Button } from "@/components/ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import {
   Dialog,
   DialogContent,
@@ -8,11 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+} from "../ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,88 +16,85 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { Plus } from "lucide-react";
+import { Button } from "../ui/button";
+import { useState } from "react";
+import { ListScheme } from ".";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TaskScheme } from ".";
 import { z } from "zod";
-import { useSession } from "next-auth/react";
 import { PostApi } from "@/app/hooks/useFetch";
-import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const AddTask = () => {
+const ListModal = () => {
   const [open, setOpen] = useState(false);
   const session = useSession();
   const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof TaskScheme>>({
-    resolver: zodResolver(TaskScheme),
+  const form = useForm<z.infer<typeof ListScheme>>({
+    resolver: zodResolver(ListScheme),
     defaultValues: {
-      title: "",
-      description: "",
+      name: "",
+      color: "#000000",
       userId: "",
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (formData: {
-      title: string;
-      description: string;
-      userId: string;
-    }) => {
-      return PostApi("task", formData);
+    mutationFn: (formData: { name: string; color: string; userId: string }) => {
+      return PostApi("list", formData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] });
-      toast.success("Task has been created!");
+      queryClient.invalidateQueries({ queryKey: ["list"] });
+      toast.success("List has been created!");
     },
     onError: (error) => {
-      toast.error("Failed to create task: " + error.message);
+      toast.error("Failed to create list: " + error.message);
     },
     networkMode: "online",
     retry: 1,
   });
 
-  const onSubmit = async ({
-    title,
-    description,
-  }: z.infer<typeof TaskScheme>) => {
+  const onSubmit = async ({ name, color }: z.infer<typeof ListScheme>) => {
     await mutation.mutateAsync({
-      title,
-      description,
+      name,
+      color,
       userId: session.data?.user?.id || "",
     });
     await setOpen(false);
-    await form.setValue("title", "");
-    await form.setValue("description", "");
+    await form.setValue("name", "");
+    await form.setValue("color", "");
   };
 
   return (
-    <div className=" flex flex-col">
+    <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="flex gap-3 justify-start">
-            <Plus /> Add New Task
+          <Button className="bg-accent text-accent-foreground justify-normal gap-2 hover:bg-[#EBEBEB]">
+            <Plus />
+            Add New List
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[768px]">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Add New Task</DialogTitle>
+            <DialogTitle>Add New List</DialogTitle>
             <DialogDescription>
-              Make changes to your profile here. Click save when youre done.
+              Make changes to your profile here. Click save when you&apos;re
+              done.
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="title"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <Label>Title:</Label>
+                    <Label>Name List:</Label>
                     <FormControl>
-                      <Input placeholder="Title" {...field} type="text" />
+                      <Input placeholder="Name List" {...field} type="text" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -109,15 +102,16 @@ const AddTask = () => {
               />
               <FormField
                 control={form.control}
-                name="description"
+                name="color"
                 render={({ field }) => (
                   <FormItem>
-                    <Label>Description:</Label>
+                    <Label>Pick your color:</Label>
                     <FormControl>
-                      <Textarea
-                        placeholder="Type your description here"
-                        className="overflow-hidden col-span-3"
+                      <Input
+                        placeholder="Color"
                         {...field}
+                        type="color"
+                        className="h-16 cursor-pointer"
                       />
                     </FormControl>
                     <FormMessage />
@@ -125,19 +119,14 @@ const AddTask = () => {
                 )}
               />
               <DialogFooter>
-                <Button
-                  type="submit"
-                  className="w-full bg-yellow-400 text-black"
-                >
-                  Submit
-                </Button>
+                <Button type="submit">Add List</Button>
               </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 
-export default AddTask;
+export default ListModal;

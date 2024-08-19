@@ -7,17 +7,13 @@ export const GET = async (request: NextRequest) => {
 
   if (!id) {
     if (userId) {
-      const task = await db.task.findMany({
+      const list = await db.list.findMany({
         where: { userId },
-        include: {
-          subtask: true,
-          list: true,
-        },
       });
       return Response.json(
         {
           result: {
-            data: task,
+            data: list,
             error: "",
           },
         },
@@ -50,20 +46,16 @@ export const GET = async (request: NextRequest) => {
   }
 
   try {
-    const task = await db.task.findUnique({
+    const list = await db.list.findUnique({
       where: { id: id },
-      include: {
-        subtask: true,
-        list: true,
-      },
     });
 
-    if (!task) {
+    if (!list) {
       return Response.json(
         {
           result: {
             data: null,
-            error: "Task tidak ditemukan",
+            error: "List tidak ditemukan",
           },
         },
         {
@@ -80,7 +72,7 @@ export const GET = async (request: NextRequest) => {
     return Response.json(
       {
         result: {
-          data: task,
+          data: list,
           error: "",
         },
       },
@@ -115,7 +107,7 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   const body = await request.json();
-  const requiredFields = ["title", "description", "userId"];
+  const requiredFields = ["name", "color", "userId"];
   const missingFields = requiredFields.filter((field) => !body[field]);
   if (missingFields.length > 0) {
     return Response.json(
@@ -137,20 +129,20 @@ export const POST = async (request: NextRequest) => {
   }
 
   try {
-    const addTask = await db.task.create({
+    const addList = await db.list.create({
       data: {
-        title: body.title,
-        description: body.description,
+        name: body.name,
+        color: body.color,
         userId: body.userId,
       },
     });
 
-    if (!addTask) {
+    if (!addList) {
       return Response.json(
         {
           result: {
             data: null,
-            error: "Gagal menambahkan task!",
+            error: "List gagal ditambah!",
           },
         },
         {
@@ -166,7 +158,7 @@ export const POST = async (request: NextRequest) => {
     return Response.json(
       {
         result: {
-          data: "Task berhasil ditambah!",
+          data: "List berhasil ditambah!",
           error: "",
         },
       },
@@ -208,7 +200,7 @@ export async function DELETE(request: NextRequest) {
       {
         result: {
           data: null,
-          error: "ID Task tidak ditemukan!",
+          error: "ID List tidak ditemukan!",
         },
       },
       {
@@ -223,16 +215,16 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const deleteTask = await db.task.delete({
+    const deleteList = await db.list.delete({
       where: { id },
     });
 
-    if (!deleteTask) {
+    if (!deleteList) {
       return Response.json(
         {
           result: {
             data: null,
-            error: "Task gagal dihapus!",
+            error: "List gagal dihapus!",
           },
         },
         {
@@ -248,7 +240,7 @@ export async function DELETE(request: NextRequest) {
     return Response.json(
       {
         result: {
-          data: "Task berhasil dihapus!",
+          data: "List berhasil dihapus!",
           error: "",
         },
       },
@@ -290,7 +282,7 @@ export async function PATCH(request: NextRequest) {
       {
         result: {
           data: null,
-          error: "ID Task tidak ditemukan!",
+          error: "ID list tidak ditemukan!",
         },
       },
       {
@@ -306,17 +298,17 @@ export async function PATCH(request: NextRequest) {
 
   if (body) {
     try {
-      const updateTask = await db.task.update({
+      const updateList = await db.list.update({
         where: { id },
         data: body,
       });
 
-      if (!updateTask) {
+      if (!updateList) {
         return Response.json(
           {
             result: {
               data: null,
-              error: "Task gagal diubah!",
+              error: "List gagal diubah!",
             },
           },
           {
@@ -332,7 +324,7 @@ export async function PATCH(request: NextRequest) {
       return Response.json(
         {
           result: {
-            data: "Task berhasil diubah!",
+            data: "List berhasil diubah!",
             error: "",
           },
         },

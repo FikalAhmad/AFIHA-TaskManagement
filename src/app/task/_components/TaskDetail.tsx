@@ -13,54 +13,95 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetApi } from "@/app/hooks/useFetch";
+import { GetApi, PatchApi } from "@/app/hooks/useFetch";
+import { TaskDataDetail } from "@/app/types/datatype-task";
+import { ListScheme } from "@/app/types/datatype-list";
+import { useSession } from "next-auth/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { TaskScheme } from ".";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 type ID = {
-  id: string;
+  id?: string;
   close: () => void;
-};
-type TaskDataDetail = {
-  id: string;
-  title: string;
-  description: string;
-  userId: string;
-  subtask: {
-    id: string;
-    title: string;
-    description: string;
-    taskId: string;
-  }[];
-  list: {
-    id: string;
-    name: string;
-    color: string;
-    taskId: string;
-  }[];
-  tags: {
-    id: string;
-    name: string;
-    color: string;
-    taskId: string;
-  }[];
 };
 
 const TaskDetail = ({ id, close }: ID) => {
-  const [taskData, setTaskData] = useState<TaskDataDetail>();
   const [inputEnabled, setInputEnabled] = useState(true);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await GetApi(`task?id=${id}`);
-        if (data) {
-          setTaskData(data.result.data);
-        }
-      } catch (error) {
-        console.error("Error fetching task data:", error);
-      }
-    };
+  const queryClient = useQueryClient();
+  const session = useSession();
 
-    fetchData();
-  }, [id]);
+  const {
+    data: taskByIdData,
+    isLoading: taskByIdLoad,
+    isError: taskByIdError,
+  } = useQuery({
+    queryKey: ["taskById", id],
+    queryFn: async () => {
+      const getTaskByIdData = await GetApi(`task?id=${id}`);
+      return getTaskByIdData;
+    },
+    enabled: !!id,
+  });
+
+  const {
+    data: listData,
+    isLoading: listLoad,
+    isError: listError,
+  } = useQuery({
+    queryKey: ["list"],
+    queryFn: async () => {
+      const getList = await GetApi(`list?userId=${session?.data?.user?.id}`);
+      return getList;
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: (formData: {
+      title: string;
+      description: string;
+      userId: string;
+    }) => {
+      return PatchApi("task", formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+      toast.success("Task has been created!");
+    },
+    onError: (error) => {
+      toast.error("Failed to create task: " + error.message);
+    },
+    networkMode: "online",
+    retry: 1,
+  });
+  const form = useForm<z.infer<typeof TaskScheme>>({
+    resolver: zodResolver(TaskScheme),
+    defaultValues: {
+      title: taskByIdData?.result?.data?.title,
+      description: taskByIdData?.result?.data?.description,
+      userId: session?.data?.user?.id,
+    },
+  });
+  const onSubmit = async ({
+    title,
+    description,
+  }: z.infer<typeof TaskScheme>) => {
+    await mutation.mutateAsync({
+      title,
+      description,
+      userId: session.data?.user?.id || "",
+    });
+  };
 
   return (
     <>
@@ -76,19 +117,65 @@ const TaskDetail = ({ id, close }: ID) => {
           </CardHeader>
           <ScrollArea className="w-full max-h-full h-[500px]">
             <CardContent className="text-sm">
-              <div className="flex flex-col gap-3">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label>Title:</Label>
+                        <FormControl>
+                          <Input
+                            placeholder="Title"
+                            {...field}
+                            type="text"
+                            disabled={inputEnabled}
+                            className="disabled:opacity-100"
+                            value={taskByIdData?.result?.data?.title}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Label>Description:</Label>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Type your description here"
+                            className="min-h-96 disabled:opacity-100"
+                            {...field}
+                            disabled={inputEnabled}
+                            value={taskByIdData?.result?.data?.description}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </form>
+              </Form>
+              {/* <div className="flex flex-col gap-3">
                 <Input
                   type="text"
-                  value={taskData?.title}
+                  value={taskByIdData?.result?.data?.title ?? ""}
                   disabled={inputEnabled}
                   className="disabled:opacity-100"
                 />
                 <Textarea
-                  value={taskData?.description}
+                  value={taskByIdData?.result?.data?.description ?? ""}
                   disabled={inputEnabled}
                   className="min-h-96 disabled:opacity-100"
                 />
-              </div>
+              </div> */}
               <div className="my-3 grid grid-cols-2 gap-3 items-center">
                 <div className="col-span-1">
                   <Label>List :</Label>
@@ -102,10 +189,13 @@ const TaskDetail = ({ id, close }: ID) => {
                       <SelectValue placeholder="Tambah List" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="red">Red</SelectItem>
-                      <SelectItem value="blue">Blue</SelectItem>
-                      <SelectItem value="green">Green</SelectItem>
-                      <SelectItem value="yellow">Yellow</SelectItem>
+                      {listData?.result?.data?.map((item: ListScheme) => {
+                        return (
+                          <SelectItem key={item.id} value={item.name}>
+                            {item.name}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -114,8 +204,20 @@ const TaskDetail = ({ id, close }: ID) => {
                 </div>
                 <div className="col-span-1">28 January 2023</div>
               </div>
-              <div className="mt-5">
-                <div className="text-xl font-semibold">Subtask:</div>
+              <div className="my-5">
+                <div className="flex justify-between mb-5">
+                  <div className="text-xl font-semibold">Subtask:</div>
+                  <Button size={"sm"} className="text-xs">
+                    Add Subtask
+                  </Button>
+                </div>
+                {taskByIdData?.result?.data?.subtask >= 0 ? (
+                  <div className="text-center text-red-500">
+                    You haven&apos;t added any subtasks yet
+                  </div>
+                ) : (
+                  <div>Ada</div>
+                )}
               </div>
 
               <div className="">

@@ -1,7 +1,4 @@
-type fetchProps = (
-  pathurl: string,
-  data: { title: string; description: string; userId: string }
-) => Promise<any>;
+type fetchProps = (pathurl: string, data: Object) => Promise<any>;
 
 export const PostApi: fetchProps = async (pathurl, data) => {
   try {
@@ -47,10 +44,11 @@ export const PatchApi: fetchProps = async (pathurl, data) => {
   }
 };
 
-export const DeleteApi = async (pathurl: string) => {
+export const DeleteApi = async (pathurl: string, data: string[]) => {
   try {
     const response = await fetch(`http://localhost:3000/api/${pathurl}`, {
       method: "DELETE",
+      body: JSON.stringify(data),
       headers: {
         "Content-Type": "application/json",
       },
@@ -63,7 +61,7 @@ export const DeleteApi = async (pathurl: string) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Error in PostApi:", error);
+    console.error("Error in DeleteApi:", error);
     throw error;
   }
 };

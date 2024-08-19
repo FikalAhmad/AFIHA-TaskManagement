@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import "@/styles/globals.css";
 import { LogOut } from "lucide-react";
 import { auth, signOut } from "@/auth";
+import { Toaster } from "sonner";
 
 export default async function TaskLayout({
   children,
@@ -12,7 +13,6 @@ export default async function TaskLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-
   return (
     <div className="flex h-screen w-full">
       <div className="flex flex-col m-3 bg-[#F4F4F4] justify-between rounded-xl">
@@ -53,6 +53,7 @@ export default async function TaskLayout({
         </div>
       </div>
       {children}
+      <Toaster />
     </div>
   );
 }
