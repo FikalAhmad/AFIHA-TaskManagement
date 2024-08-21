@@ -25,15 +25,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TaskScheme } from ".";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
-import { PostApi } from "@/app/hooks/useFetch";
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useCreateTask } from "@/app/api/task/useCreateTask";
 
 const AddTask = () => {
   const [open, setOpen] = useState(false);
   const session = useSession();
-  const queryClient = useQueryClient();
 
   const form = useForm<z.infer<typeof TaskScheme>>({
     resolver: zodResolver(TaskScheme),
@@ -44,37 +41,20 @@ const AddTask = () => {
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: (formData: {
-      title: string;
-      description: string;
-      userId: string;
-    }) => {
-      return PostApi("task", formData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] });
-      toast.success("Task has been created!");
-    },
-    onError: (error) => {
-      toast.error("Failed to create task: " + error.message);
-    },
-    networkMode: "online",
-    retry: 1,
-  });
+  const { mutateAsync: createTask, isPending: loadingCreateTask } =
+    useCreateTask();
 
   const onSubmit = async ({
     title,
     description,
   }: z.infer<typeof TaskScheme>) => {
-    await mutation.mutateAsync({
+    await createTask({
       title,
       description,
       userId: session.data?.user?.id || "",
     });
-    await setOpen(false);
-    await form.setValue("title", "");
-    await form.setValue("description", "");
+    setOpen(false);
+    form.reset({ title: "", description: "" });
   };
 
   return (
