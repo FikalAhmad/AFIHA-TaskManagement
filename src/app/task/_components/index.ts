@@ -11,8 +11,7 @@ export const TaskScheme = z.object({
 });
 
 export const TaskDetailScheme = z.object({
-  title: z.string().optional(),
-  description: z.string().optional(),
-  list: z.string().optional(),
-  subtask: z.string().optional(),
+  title: z.string(),
+  description: z.string(),
+  list: z.string(),
 });

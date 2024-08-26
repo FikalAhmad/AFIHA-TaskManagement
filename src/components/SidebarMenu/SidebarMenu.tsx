@@ -2,7 +2,7 @@
 import { Archive, ListTodo, Square, StickyNote } from "lucide-react";
 import { useState } from "react";
 import TabButton from "./TabButton";
-import ListModal from "../ListComponent/ListModal";
+import ListModal from "../../app/task/_components/ListComponent/ListModal";
 import { useSession } from "next-auth/react";
 import { GetApi } from "@/app/hooks/useFetch";
 import { ListScheme } from "@/app/types/datatype-list";

@@ -7,48 +7,23 @@ import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import TaskDetail from "./TaskDetail";
 import AddTask from "./AddTask";
-import { useSession } from "next-auth/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DeleteApi, GetApi } from "@/app/hooks/useFetch";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useFetchingTasks } from "@/app/api/task/useFetchingTasks";
+import { useDeleteTask } from "@/app/api/task/useDeleteTask";
 
 const TaskList = () => {
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const [idSelect, setIdSelect] = useState<string>("");
-  const session = useSession();
-  const queryClient = useQueryClient();
 
   const {
-    data,
-    isLoading,
+    data: taskData,
+    isLoading: loadingTaskData,
     isError,
     error: apiError,
-  } = useQuery({
-    queryKey: ["task"],
-    queryFn: async () => {
-      const getTaskData = await GetApi(
-        `task?userId=${session?.data?.user?.id}`
-      );
-      return getTaskData;
-    },
-  });
+  } = useFetchingTasks();
 
-  const mutation = useMutation({
-    mutationFn: (formData: string[]) => {
-      return DeleteApi("task", formData);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] });
-      toast.success("Task has been deleted!");
-    },
-    onError: (error) => {
-      toast.error("Failed to delete task: " + error.message);
-    },
-    networkMode: "online",
-    retry: 1,
-  });
+  const { mutateAsync: deleteTask } = useDeleteTask();
 
   const handleCheckboxChange = (taskId: string) => {
     setCheckedItems((prevState) => {
@@ -64,7 +39,7 @@ const TaskList = () => {
   const handleSelectAllChange = (isChecked: boolean) => {
     setCheckedItems(
       isChecked
-        ? data?.result?.data?.map((item: TaskDataScheme) => item.id)
+        ? taskData?.result?.data?.map((item: TaskDataScheme) => item.id)
         : []
     );
     setSelectAll(isChecked);
@@ -75,10 +50,10 @@ const TaskList = () => {
   };
 
   const handleDelete = async () => {
-    await mutation.mutateAsync(checkedItems);
+    await deleteTask(checkedItems);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (loadingTaskData) return <div>Loading...</div>;
   if (isError) {
     return (
       <div>
@@ -94,7 +69,7 @@ const TaskList = () => {
     <div className="flex justify-between gap-5 h-full m-5">
       <div className="w-full h-full">
         <AddTask />
-        {data?.result?.data.length !== 0 ? (
+        {taskData?.result?.data.length !== 0 ? (
           <>
             <div className="flex justify-between py-3 items-center">
               <div className="flex gap-2 items-center text-sm">
@@ -114,7 +89,7 @@ const TaskList = () => {
               </Button>
             </div>
             <ScrollArea className="h-[73vh]">
-              {data?.result?.data.map((item: TaskDataScheme) => {
+              {taskData?.result?.data.map((item: TaskDataScheme) => {
                 return (
                   <div className="py-2 pl-5 border-b-2" key={item.id}>
                     <div className="flex items-center gap-3 w-full">

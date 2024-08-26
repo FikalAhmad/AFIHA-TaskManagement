@@ -9,7 +9,7 @@ export const useUpdateTask = (id: string) => {
     mutationFn: (formPatchTaskData: {
       title: string;
       description: string;
-      userId: string;
+      list: string;
     }) => {
       return PatchApi(`task?id=${id}`, formPatchTaskData);
     },

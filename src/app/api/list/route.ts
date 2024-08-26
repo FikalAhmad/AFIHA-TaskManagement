@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 export const GET = async (request: NextRequest) => {
   const id = request.nextUrl.searchParams.get("id");
   const userId = request.nextUrl.searchParams.get("userId");
+  const taskId = request.nextUrl.searchParams.get("taskId");
 
   if (!id) {
     if (userId) {

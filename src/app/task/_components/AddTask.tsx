@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -25,12 +26,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TaskScheme } from ".";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
 import { useCreateTask } from "@/app/api/task/useCreateTask";
+import { useState } from "react";
 
 const AddTask = () => {
-  const [open, setOpen] = useState(false);
   const session = useSession();
+  const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof TaskScheme>>({
     resolver: zodResolver(TaskScheme),
@@ -53,13 +54,12 @@ const AddTask = () => {
       description,
       userId: session.data?.user?.id || "",
     });
-    setOpen(false);
-    form.reset({ title: "", description: "" });
+    form.reset();
   };
 
   return (
-    <div className=" flex flex-col">
-      <Dialog open={open} onOpenChange={setOpen}>
+    <div className="flex flex-col">
+      <Dialog open={open}>
         <DialogTrigger asChild>
           <Button variant="outline" className="flex gap-3 justify-start">
             <Plus /> Add New Task
@@ -108,8 +108,9 @@ const AddTask = () => {
                 <Button
                   type="submit"
                   className="w-full bg-yellow-400 text-black"
+                  disabled={loadingCreateTask}
                 >
-                  Submit
+                  {loadingCreateTask ? "Submitting..." : "Submit"}
                 </Button>
               </DialogFooter>
             </form>

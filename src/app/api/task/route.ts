@@ -54,7 +54,16 @@ export const GET = async (request: NextRequest) => {
       where: { id: id },
       include: {
         subtask: true,
-        list: true,
+        list: {
+          include: {
+            list: {
+              select: {
+                name: true,
+                color: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -201,7 +210,7 @@ export const POST = async (request: NextRequest) => {
 
 // export async function PUT(request: NextRequest) {}
 
-export async function DELETE(request: NextRequest) {
+export const DELETE = async (request: NextRequest) => {
   const body = await request.json();
 
   try {
@@ -265,11 +274,11 @@ export async function DELETE(request: NextRequest) {
       }
     );
   }
-}
+};
 
-export async function PATCH(request: NextRequest) {
+export const PATCH = async (request: NextRequest) => {
   const id = request.nextUrl.searchParams.get("id");
-  const body = await request.json();
+  const { title, description, list } = await request.json();
 
   if (!id) {
     return Response.json(
@@ -290,57 +299,37 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  if (body) {
-    try {
-      const updateTask = await db.task.update({
-        where: { id },
-        data: body,
-      });
-
-      if (!updateTask) {
-        return Response.json(
-          {
-            result: {
-              data: null,
-              error: "Task gagal diubah!",
+  try {
+    const updateData = {
+      ...(title && { title }), // Add title if provided
+      ...(description && { description }), // Add description if provided
+      ...(list && {
+        list: {
+          create: {
+            list: {
+              connect: {
+                id: list,
+              },
             },
-          },
-          {
-            status: 404,
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Access-Control-Allow-Methods": "PATCH",
-              "Access-Control-Allow-Headers": "Content-Type, application/json",
-            },
-          }
-        );
-      }
-      return Response.json(
-        {
-          result: {
-            data: "Task berhasil diubah!",
-            error: "",
           },
         },
-        {
-          status: 200,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "PATCH",
-            "Access-Control-Allow-Headers": "Content-Type, application/json",
-          },
-        }
-      );
-    } catch (err) {
+      }),
+    };
+    const updateTask = await db.task.update({
+      where: { id },
+      data: updateData,
+    });
+
+    if (!updateTask) {
       return Response.json(
         {
           result: {
             data: null,
-            error: (err as Error).message,
+            error: "Task gagal diubah!",
           },
         },
         {
-          status: 500,
+          status: 404,
           headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "PATCH",
@@ -349,5 +338,38 @@ export async function PATCH(request: NextRequest) {
         }
       );
     }
+    return Response.json(
+      {
+        result: {
+          data: "Task berhasil diubah!",
+          error: "",
+        },
+      },
+      {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "PATCH",
+          "Access-Control-Allow-Headers": "Content-Type, application/json",
+        },
+      }
+    );
+  } catch (err) {
+    return Response.json(
+      {
+        result: {
+          data: null,
+          error: (err as Error).message,
+        },
+      },
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "PATCH",
+          "Access-Control-Allow-Headers": "Content-Type, application/json",
+        },
+      }
+    );
   }
-}
+};

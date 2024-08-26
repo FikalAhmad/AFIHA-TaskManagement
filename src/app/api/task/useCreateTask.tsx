@@ -13,8 +13,8 @@ export const useCreateTask = () => {
     }) => {
       return PostApi("task", formTaskData);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["task"] });
+    onSuccess: async () => {
+      await queryClient.refetchQueries({ queryKey: ["task"] });
       toast.success("Task has been created!");
     },
     onError: (error) => {

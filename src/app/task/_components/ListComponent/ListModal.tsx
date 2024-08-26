@@ -1,5 +1,5 @@
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "../../../../components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Plus } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../../../../components/ui/button";
 import { useState } from "react";
 import { ListScheme } from ".";
 import { useForm } from "react-hook-form";

@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { useFetchingTaskById } from "@/app/api/task/useFetchingTasks";
 import { useUpdateTask } from "@/app/api/task/useUpdateTask";
 import { TaskDataScheme } from "@/app/types/datatype-task";
+import { Badge } from "@/components/ui/badge";
 
 type ID = {
   id?: string;
@@ -46,6 +47,7 @@ const TaskDetail = ({ id, close }: ID) => {
     defaultValues: {
       title: "",
       description: "",
+      list: "",
     },
   });
 
@@ -64,6 +66,7 @@ const TaskDetail = ({ id, close }: ID) => {
       });
     }
   }, [isSuccess, taskDataById, form]);
+  console.log(`bg-[${taskDataById?.result.data.list[0].list.color}]`);
 
   const {
     data: listData,
@@ -85,11 +88,12 @@ const TaskDetail = ({ id, close }: ID) => {
     form.setValue("description", task.description);
   };
 
-  const onSubmit = ({
+  const onSubmit = async ({
     title,
     description,
+    list,
   }: z.infer<typeof TaskDetailScheme>) => {
-    console.log(title, description);
+    await updateTask({ title, description, list });
     setInputEnabled(true);
   };
 
@@ -149,6 +153,60 @@ const TaskDetail = ({ id, close }: ID) => {
                       </FormItem>
                     )}
                   />
+                  <div className="flex gap-5">
+                    <div>
+                      <Label>List:</Label>
+                    </div>
+                    <div className="flex gap-2">
+                      {taskDataById?.result?.data?.list.map(
+                        (listItem: {
+                          list: { id: string; name: string; color: string };
+                        }) => {
+                          return (
+                            <Badge
+                              style={{ backgroundColor: listItem.list.color }}
+                              key={listItem.list.id}
+                            >
+                              {listItem.list.name}
+                            </Badge>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                  <FormField
+                    control={form.control}
+                    name="list"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center">
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <SelectTrigger
+                              className="w-36 text-sm disabled:opacity-100"
+                              disabled={inputEnabled}
+                            >
+                              <SelectValue placeholder="Tambah List" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {listData?.result?.data?.map(
+                                (item: ListScheme) => {
+                                  return (
+                                    <SelectItem key={item.id} value={item.id}>
+                                      {item.name}
+                                    </SelectItem>
+                                  );
+                                }
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <div className="">
                     {inputEnabled ? (
                       <Button
@@ -174,7 +232,7 @@ const TaskDetail = ({ id, close }: ID) => {
                 </form>
               </Form>
 
-              <Form {...form}>
+              {/* <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-6"
@@ -214,7 +272,7 @@ const TaskDetail = ({ id, close }: ID) => {
                     )}
                   />
                 </form>
-              </Form>
+              </Form> */}
               <div className="my-5">
                 <div className="flex justify-between mb-5">
                   <div className="text-xl font-semibold">Subtask:</div>
