@@ -75,7 +75,6 @@ model Task {
 model Subtask {
   id          String @id @default(cuid())
   title       String
-  description String
   taskId      String
   task        Task   @relation(fields: [taskId], references: [id])
 
