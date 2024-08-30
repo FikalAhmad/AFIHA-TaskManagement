@@ -2,6 +2,7 @@ import { GetApi } from "@/app/hooks/useFetch";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 
+//! ========== TASK ==========
 export const useFetchingTasks = () => {
   const session = useSession();
   return useQuery({
@@ -23,5 +24,17 @@ export const useFetchingTaskById = (id: string) => {
       return getTaskDataById;
     },
     enabled: !!id,
+  });
+};
+
+//! ========== SUBTASK ==========
+export const useFetchingSubtask = (taskId: string) => {
+  return useQuery({
+    queryKey: ["subtask", taskId],
+    queryFn: async () => {
+      const getSubtaskData = await GetApi(`subtask?taskId=${taskId}`);
+      return getSubtaskData;
+    },
+    enabled: !!taskId,
   });
 };
