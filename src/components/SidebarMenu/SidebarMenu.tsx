@@ -53,23 +53,25 @@ const SidebarMenu = () => {
       />
       <div className="flex flex-col gap-1">
         <div className="font-semibold text-xs mt-5">LISTS</div>
-        <ScrollArea className="h-64 w-full">
-          <div className="flex flex-col">
-            {data?.result?.data.map((item: ListScheme) => {
-              return (
-                <TabButton
-                  key={item.id}
-                  tabname={item.name}
-                  nametype={item.name}
-                  icon={<Square color={item.color} fill={item.color} />}
-                  isActive={isActive}
-                  onClick={() => setIsActive(`${item.name}`)}
-                />
-              );
-            })}
-          </div>
-        </ScrollArea>
-        <ListModal />
+        <div className="w-full">
+          <ScrollArea className="h-64 w-full">
+            <div className="flex flex-col">
+              {data?.result?.data.map((item: ListScheme) => {
+                return (
+                  <TabButton
+                    key={item.id}
+                    tabname={item.name}
+                    nametype={item.name}
+                    icon={<Square color={item.color} fill={item.color} />}
+                    isActive={isActive}
+                    onClick={() => setIsActive(`${item.name}`)}
+                  />
+                );
+              })}
+            </div>
+          </ScrollArea>
+          <ListModal />
+        </div>
       </div>
     </div>
   );

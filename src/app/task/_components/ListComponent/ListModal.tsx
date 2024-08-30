@@ -72,7 +72,7 @@ const ListModal = () => {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button className="bg-accent text-accent-foreground justify-normal gap-2 hover:bg-[#EBEBEB]">
+          <Button className="w-full shadow-inner bg-accent text-accent-foreground justify-normal gap-2 hover:bg-[#EBEBEB]">
             <Plus />
             Add New List
           </Button>

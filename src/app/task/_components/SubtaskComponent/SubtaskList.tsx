@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
-import TaskDetail from "./TaskDetail";
-import AddTask from "./AddTask";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFetchingTasks } from "@/app/api/task/useFetchingData";
 import { useDeleteTask } from "@/app/api/task/useDeleteData";
 
-const TaskList = () => {
+const SubtaskList = () => {
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const [idSelect, setIdSelect] = useState<string>("");
@@ -68,7 +66,6 @@ const TaskList = () => {
   return (
     <div className="flex justify-between gap-5 h-full m-5">
       <div className="w-full h-full">
-        <AddTask />
         {taskData?.result?.data.length !== 0 ? (
           <>
             <div className="flex justify-between py-3 items-center">
@@ -114,13 +111,12 @@ const TaskList = () => {
           </>
         ) : (
           <div className="text-center text-red-500">
-            You haven&apos;t added any tasks yet
+            You haven&apos;t added any subtasks yet
           </div>
         )}
       </div>
-      <TaskDetail id={idSelect} close={handleSelect} />
     </div>
   );
 };
 
-export default TaskList;
+export default SubtaskList;

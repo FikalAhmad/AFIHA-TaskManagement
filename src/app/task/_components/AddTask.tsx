@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { TaskScheme } from ".";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
-import { useCreateTask } from "@/app/api/task/useCreateTask";
+import { useCreateTask } from "@/app/api/task/useCreateData";
 import { useState } from "react";
 
 const AddTask = () => {
@@ -55,11 +55,12 @@ const AddTask = () => {
       userId: session.data?.user?.id || "",
     });
     form.reset();
+    setOpen(false);
   };
 
   return (
     <div className="flex flex-col">
-      <Dialog open={open}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className="flex gap-3 justify-start">
             <Plus /> Add New Task

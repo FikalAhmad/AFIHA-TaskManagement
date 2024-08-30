@@ -28,10 +28,12 @@ import { TaskDetailScheme } from ".";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { useFetchingTaskById } from "@/app/api/task/useFetchingTasks";
-import { useUpdateTask } from "@/app/api/task/useUpdateTask";
+import { useFetchingTaskById } from "@/app/api/task/useFetchingData";
+import { useUpdateTask } from "@/app/api/task/useUpdateData";
 import { TaskDataScheme } from "@/app/types/datatype-task";
 import { Badge } from "@/components/ui/badge";
+import AddSubtask from "./SubtaskComponent/AddSubtask";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type ID = {
   id?: string;
@@ -66,7 +68,6 @@ const TaskDetail = ({ id, close }: ID) => {
       });
     }
   }, [isSuccess, taskDataById, form]);
-  console.log(`bg-[${taskDataById?.result.data.list[0].list.color}]`);
 
   const {
     data: listData,
@@ -157,20 +158,26 @@ const TaskDetail = ({ id, close }: ID) => {
                     <div>
                       <Label>List:</Label>
                     </div>
-                    <div className="flex gap-2">
-                      {taskDataById?.result?.data?.list.map(
-                        (listItem: {
-                          list: { id: string; name: string; color: string };
-                        }) => {
-                          return (
-                            <Badge
-                              style={{ backgroundColor: listItem.list.color }}
-                              key={listItem.list.id}
-                            >
-                              {listItem.list.name}
-                            </Badge>
-                          );
-                        }
+                    <div className="flex items-center gap-2">
+                      {taskDataById?.result?.data?.list.length <= 0 ? (
+                        <div className="text-xs">
+                          Belum ada list yang ditambahkan
+                        </div>
+                      ) : (
+                        taskDataById?.result?.data?.list.map(
+                          (listItem: {
+                            list: { id: string; name: string; color: string };
+                          }) => {
+                            return (
+                              <Badge
+                                style={{ backgroundColor: listItem.list.color }}
+                                key={listItem.list.id}
+                              >
+                                {listItem.list.name}
+                              </Badge>
+                            );
+                          }
+                        )
                       )}
                     </div>
                   </div>
@@ -183,6 +190,7 @@ const TaskDetail = ({ id, close }: ID) => {
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
+                            {...field}
                           >
                             <SelectTrigger
                               className="w-36 text-sm disabled:opacity-100"
@@ -194,7 +202,10 @@ const TaskDetail = ({ id, close }: ID) => {
                               {listData?.result?.data?.map(
                                 (item: ListScheme) => {
                                   return (
-                                    <SelectItem key={item.id} value={item.id}>
+                                    <SelectItem
+                                      key={`list-item-${item.id}`}
+                                      value={item.id}
+                                    >
                                       {item.name}
                                     </SelectItem>
                                   );
@@ -231,61 +242,39 @@ const TaskDetail = ({ id, close }: ID) => {
                   </div>
                 </form>
               </Form>
-
-              {/* <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="list"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center">
-                        <Label>List:</Label>
-                        <FormControl>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <SelectTrigger
-                              className="w-36 disabled:opacity-100"
-                              disabled={inputEnabled}
-                            >
-                              <SelectValue placeholder="Tambah List" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {listData?.result?.data?.map(
-                                (item: ListScheme) => {
-                                  return (
-                                    <SelectItem key={item.id} value={item.name}>
-                                      {item.name}
-                                    </SelectItem>
-                                  );
-                                }
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form> */}
               <div className="my-5">
-                <div className="flex justify-between mb-5">
+                <div className="flex flex-col justify-between mb-5 gap-3">
                   <div className="text-xl font-semibold">Subtask:</div>
-                  <Button size={"sm"} className="text-xs">
-                    Add Subtask
-                  </Button>
+                  <AddSubtask taskId={id || ""} />
                 </div>
                 {taskDataById?.result?.data?.subtask >= 0 ? (
                   <div className="text-center text-red-500">
                     You haven&apos;t added any subtasks yet
                   </div>
                 ) : (
-                  <div>Ada</div>
+                  taskDataById?.result?.data?.subtask.map(
+                    (subtaskItem: {
+                      id: string;
+                      title: string;
+                      taskId: string;
+                    }) => {
+                      return (
+                        <div
+                          className="py-2 pl-5"
+                          key={`subtask-${subtaskItem.id}`}
+                        >
+                          <div className="flex items-center gap-3 w-full">
+                            <Checkbox
+                              id="subtask"
+                              // checked={checkedItems.includes(item.id)}
+                              // onCheckedChange={() => handleCheckboxChange(item.id)}
+                            />
+                            <div>{subtaskItem.title}</div>
+                          </div>
+                        </div>
+                      );
+                    }
+                  )
                 )}
               </div>
             </CardContent>
