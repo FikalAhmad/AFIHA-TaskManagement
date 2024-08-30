@@ -3,21 +3,17 @@ import { NextRequest } from "next/server";
 
 export const GET = async (request: NextRequest) => {
   const id = request.nextUrl.searchParams.get("id");
-  const userId = request.nextUrl.searchParams.get("userId");
+  const taskId = request.nextUrl.searchParams.get("taskId");
 
   if (!id) {
-    if (userId) {
-      const task = await db.task.findMany({
-        where: { userId },
-        include: {
-          subtask: true,
-          list: true,
-        },
+    if (taskId) {
+      const subtask = await db.subtask.findMany({
+        where: { taskId },
       });
       return Response.json(
         {
           result: {
-            data: task,
+            data: subtask,
             error: "",
           },
         },
@@ -50,15 +46,11 @@ export const GET = async (request: NextRequest) => {
   }
 
   try {
-    const task = await db.task.findUnique({
+    const subtask = await db.subtask.findUnique({
       where: { id: id },
-      include: {
-        subtask: true,
-        list: true,
-      },
     });
 
-    if (!task) {
+    if (!subtask) {
       return Response.json(
         {
           result: {
@@ -80,7 +72,7 @@ export const GET = async (request: NextRequest) => {
     return Response.json(
       {
         result: {
-          data: task,
+          data: subtask,
           error: "",
         },
       },
@@ -115,7 +107,7 @@ export const GET = async (request: NextRequest) => {
 
 export const POST = async (request: NextRequest) => {
   const body = await request.json();
-  const requiredFields = ["title", "description", "userId"];
+  const requiredFields = ["title", "taskId"];
   const missingFields = requiredFields.filter((field) => !body[field]);
   if (missingFields.length > 0) {
     return Response.json(
@@ -137,15 +129,14 @@ export const POST = async (request: NextRequest) => {
   }
 
   try {
-    const addTask = await db.task.create({
+    const addSubtask = await db.subtask.create({
       data: {
         title: body.title,
-        description: body.description,
-        userId: body.userId,
+        taskId: body.taskId,
       },
     });
 
-    if (!addTask) {
+    if (!addSubtask) {
       return Response.json(
         {
           result: {
@@ -223,11 +214,11 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const deleteTask = await db.task.delete({
+    const deleteSubtask = await db.subtask.delete({
       where: { id },
     });
 
-    if (!deleteTask) {
+    if (!deleteSubtask) {
       return Response.json(
         {
           result: {
@@ -306,12 +297,12 @@ export async function PATCH(request: NextRequest) {
 
   if (body) {
     try {
-      const updateTask = await db.task.update({
+      const updateSubtask = await db.subtask.update({
         where: { id },
         data: body,
       });
 
-      if (!updateTask) {
+      if (!updateSubtask) {
         return Response.json(
           {
             result: {
