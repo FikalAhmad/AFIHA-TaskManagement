@@ -171,7 +171,7 @@ const TaskDetail = ({ id, close }: ID) => {
                             return (
                               <Badge
                                 style={{ backgroundColor: listItem.list.color }}
-                                key={listItem.list.id}
+                                key={`id-list-${listItem.list.id}`}
                               >
                                 {listItem.list.name}
                               </Badge>
