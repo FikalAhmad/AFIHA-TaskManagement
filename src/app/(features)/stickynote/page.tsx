@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 
 interface Position {
@@ -15,6 +15,7 @@ const getRandomPosition = (maxWidth: number, maxHeight: number) => {
 
 const StickyNote = () => {
   const [positions, setPositions] = useState<Position[]>([]);
+  const draggableRef = useRef(null);
 
   useEffect(() => {
     // Initial positions setup
@@ -40,8 +41,12 @@ const StickyNote = () => {
           bounds="parent"
           position={position}
           onDrag={handleDrag(index)}
+          nodeRef={draggableRef}
         >
-          <div className="w-48 h-48 bg-blue-300 p-3 cursor-grabbing absolute">
+          <div
+            className="w-48 h-48 bg-blue-300 p-3 cursor-grabbing absolute"
+            ref={draggableRef}
+          >
             <h1>Thesis Report</h1>
             <div className="text-xs">
               Lorem Ipsum Dolor Sit AmetLorem Ipsum Dolor Sit Amet
