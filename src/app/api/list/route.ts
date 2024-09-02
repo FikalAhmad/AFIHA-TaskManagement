@@ -49,6 +49,18 @@ export const GET = async (request: NextRequest) => {
   try {
     const list = await db.list.findUnique({
       where: { id: id },
+      include: {
+        task: {
+          include: {
+            task: {
+              select: {
+                title: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!list) {

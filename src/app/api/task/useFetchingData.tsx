@@ -27,6 +27,31 @@ export const useFetchingTaskById = (id: string) => {
   });
 };
 
+//! ========== LIST ==========
+export const useFetchingLists = () => {
+  const session = useSession();
+  return useQuery({
+    queryKey: ["list"],
+    queryFn: async () => {
+      const getListData = await GetApi(
+        `list?userId=${session?.data?.user?.id}`
+      );
+      return getListData;
+    },
+  });
+};
+
+export const useFetchingListById = (id: string) => {
+  return useQuery({
+    queryKey: ["list", id],
+    queryFn: async () => {
+      const getListDataById = await GetApi(`list?id=${id}`);
+      return getListDataById;
+    },
+    enabled: !!id,
+  });
+};
+
 //! ========== SUBTASK ==========
 export const useFetchingSubtask = (taskId: string) => {
   return useQuery({

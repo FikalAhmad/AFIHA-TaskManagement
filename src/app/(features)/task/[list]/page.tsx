@@ -1,29 +1,22 @@
 "use client";
-
-import { TaskDataScheme } from "@/app/types/datatype-task";
+import { useFetchingListById } from "@/app/api/task/useFetchingData";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ArrowRight } from "lucide-react";
-import { useState } from "react";
-import TaskDetail from "./TaskDetail";
-import AddTask from "./AddTask";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFetchingTasks } from "@/app/api/task/useFetchingData";
-import { useDeleteTask } from "@/app/api/task/useDeleteData";
+import React, { useState } from "react";
+import TaskDetail from "../_components/TaskDetail";
+import AddTask from "../_components/AddTask";
+import { ListWithTask } from "@/app/types/datatype-list";
+import { Checkbox } from "@/components/ui/checkbox";
 
-const TaskList = () => {
+const ListPage = ({ params }: { params: { list: string } }) => {
+  const { list } = params; //the destruct variable name must match the folder name. for example the folder [list] then it must be { list }
   const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState<boolean>(false);
   const [idSelect, setIdSelect] = useState<string>("");
 
-  const {
-    data: taskData,
-    isLoading: loadingTaskData,
-    isError,
-    error: apiError,
-  } = useFetchingTasks();
-
-  const { mutateAsync: deleteTask } = useDeleteTask();
+  const { data: GetListData, isLoading: LoadingListData } =
+    useFetchingListById(list);
 
   const handleCheckboxChange = (taskId: string) => {
     setCheckedItems((prevState) => {
@@ -35,11 +28,14 @@ const TaskList = () => {
       }
     });
   };
+  console.log(GetListData?.result?.data);
 
   const handleSelectAllChange = (isChecked: boolean) => {
     setCheckedItems(
       isChecked
-        ? taskData?.result?.data?.map((item: TaskDataScheme) => item.id)
+        ? GetListData?.result?.data?.task.map(
+            (item: ListWithTask) => item.taskId
+          )
         : []
     );
     setSelectAll(isChecked);
@@ -49,29 +45,19 @@ const TaskList = () => {
     setIdSelect("");
   };
 
-  const handleDelete = async () => {
-    await deleteTask(checkedItems);
-  };
-
-  if (loadingTaskData) return <div>Loading...</div>;
-  if (isError) {
-    return (
-      <div>
-        <h1>Error Occured</h1>
-        <p>Please try again later</p>
-        <p>Error Message</p>
-        <p>{apiError.message}</p>
-      </div>
-    );
-  }
+  // const handleDelete = async () => {
+  //   await deleteTask(checkedItems);
+  // };
 
   return (
     <div className="w-full h-screen">
-      <div className="m-5 text-4xl font-semibold">Task</div>
+      <div className="m-5 text-4xl font-semibold">
+        {GetListData?.result?.data.name}
+      </div>
       <div className="flex justify-between gap-5 h-full m-5">
         <div className="w-full h-full">
           <AddTask />
-          {taskData?.result?.data.length !== 0 ? (
+          {GetListData?.result?.data.task.length !== 0 ? (
             <>
               <div className="flex justify-between py-3 items-center">
                 <div className="flex gap-2 items-center text-sm">
@@ -81,31 +67,36 @@ const TaskList = () => {
                   />
                   Select All
                 </div>
-                <Button
-                  size={"sm"}
-                  variant={"destructive"}
-                  className="text-xs"
-                  onClick={handleDelete}
-                >
-                  Hapus Task
-                </Button>
+                {/* <Button
+                size={"sm"}
+                variant={"destructive"}
+                className="text-xs"
+                onClick={handleDelete}
+              >
+                Hapus Task
+              </Button> */}
               </div>
               <ScrollArea className="h-[73vh]">
-                {taskData?.result?.data.map((item: TaskDataScheme) => {
+                {GetListData?.result?.data.task.map((item: ListWithTask) => {
                   return (
-                    <div className="py-2 pl-5 border-b-2" key={item.id}>
+                    <div
+                      className="py-2 pl-5 border-b-2"
+                      key={`tasklist-item-${item.taskId}`}
+                    >
                       <div className="flex items-center gap-3 w-full">
                         <Checkbox
                           id="task"
-                          checked={checkedItems.includes(item.id)}
-                          onCheckedChange={() => handleCheckboxChange(item.id)}
+                          checked={checkedItems.includes(item.taskId)}
+                          onCheckedChange={() =>
+                            handleCheckboxChange(item.taskId)
+                          }
                         />
                         <Button
                           variant="ghost"
                           className="w-full flex justify-between"
-                          onClick={() => setIdSelect(item.id)}
+                          onClick={() => setIdSelect(item.taskId)}
                         >
-                          {item.title}
+                          {item.task.title}
                           <ArrowRight />
                         </Button>
                       </div>
@@ -126,4 +117,4 @@ const TaskList = () => {
   );
 };
 
-export default TaskList;
+export default ListPage;

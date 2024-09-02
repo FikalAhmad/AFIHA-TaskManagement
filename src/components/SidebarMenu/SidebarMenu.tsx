@@ -4,49 +4,35 @@ import { useState } from "react";
 import TabButton from "./TabButton";
 import ListModal from "../../app/(features)/task/_components/ListComponent/ListModal";
 import { useSession } from "next-auth/react";
-import { GetApi } from "@/app/hooks/useFetch";
 import { ListScheme } from "@/app/types/datatype-list";
 import { ScrollArea } from "../ui/scroll-area";
-import { useQuery } from "@tanstack/react-query";
+import { useFetchingLists } from "@/app/api/task/useFetchingData";
 
 const SidebarMenu = () => {
   const [isActive, setIsActive] = useState<string>("task");
   const session = useSession();
-  const {
-    data,
-    isLoading,
-    isError,
-    error: apiError,
-  } = useQuery({
-    queryKey: ["list"],
-    queryFn: async () => {
-      const getTaskData = await GetApi(
-        `list?userId=${session?.data?.user?.id}`
-      );
-      return getTaskData;
-    },
-  });
+  const { data, isLoading, isError, error: apiError } = useFetchingLists();
 
   return (
     <div className="flex flex-col">
       <div className="font-semibold text-xs">TASKS</div>
       <TabButton
         tabname="Task"
-        nametype="task"
+        nametype="/task"
         icon={<ListTodo />}
         isActive={isActive}
         onClick={() => setIsActive("task")}
       />
       <TabButton
         tabname="Archive"
-        nametype="archive"
+        nametype="/archive"
         icon={<Archive />}
         isActive={isActive}
         onClick={() => setIsActive("archive")}
       />
       <TabButton
         tabname="Sticky Note"
-        nametype="stickynote"
+        nametype="/stickynote"
         icon={<StickyNote />}
         isActive={isActive}
         onClick={() => setIsActive("stickynote")}
@@ -61,7 +47,7 @@ const SidebarMenu = () => {
                   <TabButton
                     key={item.id}
                     tabname={item.name}
-                    nametype={item.name}
+                    nametype={`/task/${item.id}`}
                     icon={<Square color={item.color} fill={item.color} />}
                     isActive={isActive}
                     onClick={() => setIsActive(`${item.name}`)}
