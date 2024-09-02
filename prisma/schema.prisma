@@ -100,4 +100,14 @@ model TaskList {
 
   @@id([taskId, listId])
   @@map("tasklist")
+
+}
+
+model StickyNote {
+  id      String    @id @default(cuid())
+  title   String
+  content String
+  color   String
+
+  @@map("stickynotes")
 }
