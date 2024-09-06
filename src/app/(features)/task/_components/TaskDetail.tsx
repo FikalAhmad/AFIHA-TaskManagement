@@ -16,7 +16,7 @@ import {
 import { GetApi } from "@/app/hooks/useFetch";
 import { ListScheme } from "@/app/types/datatype-list";
 import { useSession } from "next-auth/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   Form,
   FormControl,
@@ -165,13 +165,16 @@ const TaskDetail = ({ id, close }: ID) => {
                         </div>
                       ) : (
                         taskDataById?.result?.data?.list.map(
-                          (listItem: {
-                            list: { id: string; name: string; color: string };
-                          }) => {
+                          (
+                            listItem: {
+                              list: { id: string; name: string; color: string };
+                            },
+                            index: number
+                          ) => {
                             return (
                               <Badge
                                 style={{ backgroundColor: listItem.list.color }}
-                                key={`id-list-${listItem.list.id}`}
+                                key={`id-list-${index + 1}`}
                               >
                                 {listItem.list.name}
                               </Badge>
@@ -181,6 +184,7 @@ const TaskDetail = ({ id, close }: ID) => {
                       )}
                     </div>
                   </div>
+
                   <FormField
                     control={form.control}
                     name="list"
@@ -190,7 +194,7 @@ const TaskDetail = ({ id, close }: ID) => {
                           <Select
                             onValueChange={field.onChange}
                             defaultValue={field.value}
-                            {...field}
+                            value={field.value}
                           >
                             <SelectTrigger
                               className="w-36 text-sm disabled:opacity-100"
@@ -263,6 +267,7 @@ const TaskDetail = ({ id, close }: ID) => {
                           className="py-2 pl-5"
                           key={`subtask-${subtaskItem.id}`}
                         >
+                          ``
                           <div className="flex items-center gap-3 w-full">
                             <Checkbox
                               id="subtask"

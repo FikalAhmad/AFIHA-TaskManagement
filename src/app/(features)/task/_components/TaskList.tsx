@@ -26,14 +26,11 @@ const TaskList = () => {
   const { mutateAsync: deleteTask } = useDeleteTask();
 
   const handleCheckboxChange = (taskId: string) => {
-    setCheckedItems((prevState) => {
-      const newCheckedItems = [...prevState];
-      if (newCheckedItems.includes(taskId)) {
-        return newCheckedItems.filter((i) => i !== taskId);
-      } else {
-        return [...newCheckedItems, taskId];
-      }
-    });
+    setCheckedItems((prevState) =>
+      prevState.includes(taskId)
+        ? prevState.filter((id) => id !== taskId)
+        : [...prevState, taskId]
+    );
   };
 
   const handleSelectAllChange = (isChecked: boolean) => {
@@ -86,6 +83,7 @@ const TaskList = () => {
                   variant={"destructive"}
                   className="text-xs"
                   onClick={handleDelete}
+                  disabled={checkedItems.length === 0}
                 >
                   Hapus Task
                 </Button>
