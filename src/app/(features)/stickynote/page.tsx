@@ -1,6 +1,11 @@
 "use client";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
+import AddStickyNote from "./AddStickyNote";
+import { useFetchingSN } from "@/app/api/stickynote/useFetchingSN";
+import { SNScheme } from "@/app/types/datatype-SN";
 
 interface Position {
   x: number;
@@ -17,13 +22,24 @@ const StickyNote = () => {
   const [positions, setPositions] = useState<Position[]>([]);
   const draggableRef = useRef(null);
 
+  const {
+    data: SNData,
+    isLoading: loadingSNData,
+    isError,
+    error: apiError,
+  } = useFetchingSN();
+
+  console.log(SNData?.result?.data);
+
   useEffect(() => {
-    // Initial positions setup
-    const initialPositions = Array.from({ length: 5 }, () =>
-      getRandomPosition(800, 600)
-    );
-    setPositions(initialPositions);
-  }, []);
+    if (SNData?.result?.data) {
+      // Map the SNData to create positions
+      const updatedPositions = SNData.result.data.map(() =>
+        getRandomPosition(800, 600)
+      );
+      setPositions(updatedPositions);
+    }
+  }, [SNData]);
 
   const handleDrag =
     (index: number) => (e: DraggableEvent, ui: DraggableData) => {
@@ -33,27 +49,44 @@ const StickyNote = () => {
       setPositions(newPositions);
     };
 
+  console.log(positions);
+
   return (
     <div className="h-screen w-full relative overflow-hidden">
-      {positions.map((position, index) => (
-        <Draggable
-          key={index}
-          bounds="parent"
-          position={position}
-          onDrag={handleDrag(index)}
-          nodeRef={draggableRef}
-        >
-          <div
-            className="w-48 h-48 bg-blue-300 p-3 cursor-grabbing absolute"
-            ref={draggableRef}
+      <AddStickyNote />
+      {SNData?.result?.data && positions.length !== 0 ? (
+        SNData.result.data.map((item: SNScheme, index: number) => (
+          <Draggable
+            key={item.id}
+            bounds="parent"
+            position={positions[index]}
+            onDrag={handleDrag(index)}
+            nodeRef={draggableRef}
           >
-            <h1>Thesis Report</h1>
-            <div className="text-xs">
-              Lorem Ipsum Dolor Sit AmetLorem Ipsum Dolor Sit Amet
+            <div
+              style={{ backgroundColor: item.color }}
+              className="w-48 h-48 p-3 cursor-grabbing absolute group"
+              ref={draggableRef}
+            >
+              <h1>{item.title}</h1>
+              <div className="text-xs">{item.content}</div>
+              <div className="flex flex-col items-end relative">
+                <Button
+                  size={"icon"}
+                  variant={"destructive"}
+                  className="invisible absolute -top-16 -right-7 rounded-3xl group-hover:visible"
+                >
+                  <X size={18} />
+                </Button>
+              </div>
             </div>
-          </div>
-        </Draggable>
-      ))}
+          </Draggable>
+        ))
+      ) : (
+        <div className="flex justify-center items-center h-[90vh]">
+          no stickynotes added yet!
+        </div>
+      )}
     </div>
   );
 };
