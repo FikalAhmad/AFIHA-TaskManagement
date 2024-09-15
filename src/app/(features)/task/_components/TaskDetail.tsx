@@ -267,7 +267,6 @@ const TaskDetail = ({ id, close }: ID) => {
                           className="py-2 pl-5"
                           key={`subtask-${subtaskItem.id}`}
                         >
-                          ``
                           <div className="flex items-center gap-3 w-full">
                             <Checkbox
                               id="subtask"
